@@ -183,6 +183,7 @@ public sealed class Image
             ImageFormat.Pbm or ImageFormat.Pgm or ImageFormat.Ppm => Codecs.Pnm.PnmCodec.Decode(stream),
             ImageFormat.WebP => Codecs.WebP.WebPCodec.Decode(stream),
             ImageFormat.Tiff => Codecs.Tiff.TiffCodec.Decode(stream),
+            ImageFormat.Tga => Codecs.Tga.TgaCodec.Decode(stream),
             _ => throw new NotSupportedException($"Image format '{format}' is not supported.")
         };
     }
@@ -280,6 +281,9 @@ public sealed class Image
             case ImageFormat.Tiff:
                 Codecs.Tiff.TiffCodec.Encode(this, stream);
                 break;
+            case ImageFormat.Tga:
+                Codecs.Tga.TgaCodec.Encode(this, stream);
+                break;
             default:
                 throw new NotSupportedException($"Image format '{format}' is not supported.");
         }
@@ -354,6 +358,7 @@ public sealed class Image
             ".ppm" or ".pnm" => ImageFormat.Ppm,
             ".webp" => ImageFormat.WebP,
             ".tif" or ".tiff" => ImageFormat.Tiff,
+            ".tga" or ".vda" or ".icb" or ".vst" => ImageFormat.Tga,
             _ => throw new NotSupportedException($"Unknown image format for extension '{ext}'.")
         };
     }

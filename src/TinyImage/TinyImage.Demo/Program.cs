@@ -17,9 +17,11 @@ class Program
         Process("board.tif");
         Process("galaxy.tif");
         Process("mri.tif");
-        Process("venus.tif");*/
+        Process("venus.tif");
         Process("screws.tif");
-        
+        Process("earth.tga");*/
+        Process("shuttle.tga");
+
         void Process(string name)
         {
             Image image = Image.Load(Path.Join("imgs", name));

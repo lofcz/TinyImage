@@ -66,5 +66,12 @@ public enum ImageFormat
     /// Supports various compression methods (none, LZW, Deflate, PackBits),
     /// multiple pages, strips, and tiles.
     /// </summary>
-    Tiff
+    Tiff,
+
+    /// <summary>
+    /// TGA format (Truevision Graphics Adapter).
+    /// Supports uncompressed and RLE-compressed true-color, grayscale, and color-mapped images.
+    /// Common in game development and 3D graphics workflows.
+    /// </summary>
+    Tga
 }
