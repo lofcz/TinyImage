@@ -34,5 +34,23 @@ public enum ImageFormat
     /// BMP format (Bitmap).
     /// Uncompressed or RLE compressed format with support for 1-32 bits per pixel.
     /// </summary>
-    Bmp
+    Bmp,
+
+    /// <summary>
+    /// PBM format (Portable Bitmap).
+    /// Black and white images. Supports P1 (ASCII) and P4 (binary) variants.
+    /// </summary>
+    Pbm,
+
+    /// <summary>
+    /// PGM format (Portable Graymap).
+    /// Grayscale images. Supports P2 (ASCII) and P5 (binary) variants.
+    /// </summary>
+    Pgm,
+
+    /// <summary>
+    /// PPM format (Portable Pixmap).
+    /// RGB color images. Supports P3 (ASCII) and P6 (binary) variants.
+    /// </summary>
+    Ppm
 }

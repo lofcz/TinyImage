@@ -8,8 +8,9 @@ class Program
         //Process("stone.jpg");
         //Process("earth.gif");
         //Process("globe.jp2");
-        Process("three.bmp");
-        Process("lena.bmp");
+        //Process("three.bmp");
+        //Process("lena.bmp");
+        Process("landscape.pbm");
 
         void Process(string name)
         {

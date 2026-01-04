@@ -180,6 +180,7 @@ public sealed class Image
             ImageFormat.Gif => Codecs.Gif.GifCodec.Decode(stream),
             ImageFormat.Jpeg2000 => Codecs.Jpeg2000.Jpeg2000Codec.Decode(stream),
             ImageFormat.Bmp => Codecs.Bmp.BmpCodec.Decode(stream),
+            ImageFormat.Pbm or ImageFormat.Pgm or ImageFormat.Ppm => Codecs.Pnm.PnmCodec.Decode(stream),
             _ => throw new NotSupportedException($"Image format '{format}' is not supported.")
         };
     }
@@ -262,6 +263,15 @@ public sealed class Image
             case ImageFormat.Bmp:
                 Codecs.Bmp.BmpCodec.Encode(this, stream);
                 break;
+            case ImageFormat.Pbm:
+                Codecs.Pnm.PnmCodec.EncodePbm(this, stream);
+                break;
+            case ImageFormat.Pgm:
+                Codecs.Pnm.PnmCodec.EncodePgm(this, stream);
+                break;
+            case ImageFormat.Ppm:
+                Codecs.Pnm.PnmCodec.EncodePpm(this, stream);
+                break;
             default:
                 throw new NotSupportedException($"Image format '{format}' is not supported.");
         }
@@ -331,6 +341,9 @@ public sealed class Image
             ".gif" => ImageFormat.Gif,
             ".jp2" or ".j2k" or ".j2c" or ".jpf" or ".jpx" => ImageFormat.Jpeg2000,
             ".bmp" or ".dib" => ImageFormat.Bmp,
+            ".pbm" => ImageFormat.Pbm,
+            ".pgm" => ImageFormat.Pgm,
+            ".ppm" or ".pnm" => ImageFormat.Ppm,
             _ => throw new NotSupportedException($"Unknown image format for extension '{ext}'.")
         };
     }
@@ -388,6 +401,23 @@ public sealed class Image
             data[0] == 0x42 && data[1] == 0x4D)
         {
             return ImageFormat.Bmp;
+        }
+
+        // Netpbm formats: P1-P6 (0x50 + 0x31-0x36)
+        if (data.Length >= 2 && data[0] == 0x50) // 'P'
+        {
+            switch (data[1])
+            {
+                case 0x31: // P1 - PBM ASCII
+                case 0x34: // P4 - PBM Binary
+                    return ImageFormat.Pbm;
+                case 0x32: // P2 - PGM ASCII
+                case 0x35: // P5 - PGM Binary
+                    return ImageFormat.Pgm;
+                case 0x33: // P3 - PPM ASCII
+                case 0x36: // P6 - PPM Binary
+                    return ImageFormat.Ppm;
+            }
         }
 
         throw new NotSupportedException("Unknown image format. Could not detect from file signature.");
