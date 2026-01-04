@@ -1,0 +1,6 @@
+<Project>
+  <!-- Compile the embedded source files -->
+  <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)..\contentFiles\cs\any\TinyImage\**\*.cs" LinkBase="TinyImage" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,12 @@
+namespace TinyImage.Codecs.Png;
+
+/// <summary>
+/// The method used to compress the image data.
+/// </summary>
+internal enum PngCompressionMethod : byte
+{
+    /// <summary>
+    /// Deflate/inflate compression with a sliding window of at most 32768 bytes.
+    /// </summary>
+    DeflateWithSlidingWindow = 0
+}

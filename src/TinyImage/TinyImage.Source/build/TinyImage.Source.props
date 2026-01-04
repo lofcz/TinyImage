@@ -1,0 +1,29 @@
+<Project>
+  <PropertyGroup>
+    <!-- Enable unsafe blocks for JPEG codec -->
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    
+    <!-- Define constants for source-only build -->
+    <DefineConstants>$(DefineConstants);TINYIMAGE_INTERNAL</DefineConstants>
+  </PropertyGroup>
+
+  <!-- Polyfill constants for netstandard2.0 -->
+  <PropertyGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
+    <DefineConstants>$(DefineConstants);NO_MATH_CLAMP;NO_MATHF;NO_FAST_SPAN;NO_NULLABLE_REFERENCE;NO_READONLYSEQUENCE_FISTSPAN;NO_BIT_OPERATIONS;NO_SKIP_LOCALS_INIT</DefineConstants>
+  </PropertyGroup>
+
+  <!-- Polyfill constants for netstandard2.1 -->
+  <PropertyGroup Condition="'$(TargetFramework)' == 'netstandard2.1'">
+    <DefineConstants>$(DefineConstants);NO_READONLYSEQUENCE_FISTSPAN;NO_BIT_OPERATIONS;NO_SKIP_LOCALS_INIT</DefineConstants>
+  </PropertyGroup>
+
+  <!-- BCL Polyfills for legacy TFMs -->
+  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
+    <PackageReference Include="System.Memory" Version="4.5.5" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0' OR 
+                        '$(TargetFramework)' == 'netstandard2.1'">
+    <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="6.0.0" />
+  </ItemGroup>
+</Project>

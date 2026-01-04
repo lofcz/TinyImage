@@ -1,0 +1,34 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <LangVersion>preview</LangVersion>
+    <Nullable>enable</Nullable>
+    
+    <!-- This is a source-only package - no DLL output -->
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
+    <DevelopmentDependency>true</DevelopmentDependency>
+    
+    <!-- Package metadata -->
+    <PackageId>TinyImage.Source</PackageId>
+    <Description>Minimal, fully managed C# library for basic image manipulation (load, save, resize). Source-only package - all code is embedded and compiled with your project. Supports PNG and JPEG with zero runtime dependencies.</Description>
+    <Authors>TinyImage Contributors</Authors>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageTags>image;png;jpeg;resize;managed;source;source-only</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Include source files as content -->
+    <None Include="..\TinyImage\**\*.cs" Exclude="..\TinyImage\obj\**;..\TinyImage\bin\**" Pack="true" PackagePath="contentFiles\cs\any\TinyImage" />
+    
+    <!-- Include the props and targets files -->
+    <None Include="build\TinyImage.Source.props" Pack="true" PackagePath="build" />
+    <None Include="build\TinyImage.Source.targets" Pack="true" PackagePath="build" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="contentFiles.props" Pack="true" PackagePath="contentFiles" />
+  </ItemGroup>
+
+</Project>

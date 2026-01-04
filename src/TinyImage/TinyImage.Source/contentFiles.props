@@ -1,0 +1,10 @@
+<Project>
+  <PropertyGroup>
+    <!-- Do not copy source files to output, they are for compilation only -->
+    <ContentTargetFolders>contentFiles</ContentTargetFolders>
+  </PropertyGroup>
+  
+  <ItemGroup>
+    <Content Include="**\*.cs" CopyToOutputDirectory="Never" />
+  </ItemGroup>
+</Project>

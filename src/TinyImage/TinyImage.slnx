@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="TinyImage/TinyImage.csproj" />
+  <Project Path="TinyImage.Demo/TinyImage.Demo.csproj" />
+  <Project Path="TinyImage.Source/TinyImage.Source.csproj" />
+  <Project Path="TinyImage.Tests/TinyImage.Tests.csproj" />
+</Solution>
