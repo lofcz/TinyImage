@@ -184,6 +184,7 @@ public sealed class Image
             ImageFormat.WebP => Codecs.WebP.WebPCodec.Decode(stream),
             ImageFormat.Tiff => Codecs.Tiff.TiffCodec.Decode(stream),
             ImageFormat.Tga => Codecs.Tga.TgaCodec.Decode(stream),
+            ImageFormat.Qoi => Codecs.Qoi.QoiCodec.Decode(stream),
             _ => throw new NotSupportedException($"Image format '{format}' is not supported.")
         };
     }
@@ -284,6 +285,9 @@ public sealed class Image
             case ImageFormat.Tga:
                 Codecs.Tga.TgaCodec.Encode(this, stream);
                 break;
+            case ImageFormat.Qoi:
+                Codecs.Qoi.QoiCodec.Encode(this, stream);
+                break;
             default:
                 throw new NotSupportedException($"Image format '{format}' is not supported.");
         }
@@ -359,6 +363,7 @@ public sealed class Image
             ".webp" => ImageFormat.WebP,
             ".tif" or ".tiff" => ImageFormat.Tiff,
             ".tga" or ".vda" or ".icb" or ".vst" => ImageFormat.Tga,
+            ".qoi" => ImageFormat.Qoi,
             _ => throw new NotSupportedException($"Unknown image format for extension '{ext}'.")
         };
     }
@@ -456,6 +461,13 @@ public sealed class Image
             {
                 return ImageFormat.Tiff;
             }
+        }
+
+        // QOI signature: 71 6F 69 66 ("qoif")
+        if (data.Length >= 4 &&
+            data[0] == 0x71 && data[1] == 0x6F && data[2] == 0x69 && data[3] == 0x66)
+        {
+            return ImageFormat.Qoi;
         }
 
         throw new NotSupportedException("Unknown image format. Could not detect from file signature.");

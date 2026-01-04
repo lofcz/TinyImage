@@ -19,8 +19,9 @@ class Program
         Process("mri.tif");
         Process("venus.tif");
         Process("screws.tif");
-        Process("earth.tga");*/
-        Process("shuttle.tga");
+        Process("earth.tga");
+        Process("shuttle.tga");*/
+        Process("qoi_logo.qoi");
 
         void Process(string name)
         {

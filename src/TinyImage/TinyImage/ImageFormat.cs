@@ -73,5 +73,13 @@ public enum ImageFormat
     /// Supports uncompressed and RLE-compressed true-color, grayscale, and color-mapped images.
     /// Common in game development and 3D graphics workflows.
     /// </summary>
-    Tga
+    Tga,
+
+    /// <summary>
+    /// QOI format (Quite OK Image).
+    /// Fast lossless image format with alpha channel support.
+    /// Provides 20-50x faster encoding and 3-4x faster decoding than PNG
+    /// with comparable compression ratios.
+    /// </summary>
+    Qoi
 }
