@@ -280,9 +280,7 @@ internal sealed class NeuQuant
                 AlterNeighbour(alphaFactor, rad, j, r, g, b, a);
             }
 
-            pos += step;
-            if (pos >= pixelCount)
-                pos -= pixelCount;
+            pos = (pos + step) % pixelCount;
 
             count++;
             if (count % delta == 0)

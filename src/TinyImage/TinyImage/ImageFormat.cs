@@ -59,5 +59,12 @@ public enum ImageFormat
     /// Supports both lossy (VP8) and lossless (VP8L) compression with alpha channel.
     /// Also supports animation.
     /// </summary>
-    WebP
+    WebP,
+
+    /// <summary>
+    /// TIFF format (Tagged Image File Format).
+    /// Supports various compression methods (none, LZW, Deflate, PackBits),
+    /// multiple pages, strips, and tiles.
+    /// </summary>
+    Tiff
 }

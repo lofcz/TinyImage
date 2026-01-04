@@ -182,6 +182,7 @@ public sealed class Image
             ImageFormat.Bmp => Codecs.Bmp.BmpCodec.Decode(stream),
             ImageFormat.Pbm or ImageFormat.Pgm or ImageFormat.Ppm => Codecs.Pnm.PnmCodec.Decode(stream),
             ImageFormat.WebP => Codecs.WebP.WebPCodec.Decode(stream),
+            ImageFormat.Tiff => Codecs.Tiff.TiffCodec.Decode(stream),
             _ => throw new NotSupportedException($"Image format '{format}' is not supported.")
         };
     }
@@ -276,6 +277,9 @@ public sealed class Image
             case ImageFormat.WebP:
                 Codecs.WebP.WebPCodec.Encode(this, stream);
                 break;
+            case ImageFormat.Tiff:
+                Codecs.Tiff.TiffCodec.Encode(this, stream);
+                break;
             default:
                 throw new NotSupportedException($"Image format '{format}' is not supported.");
         }
@@ -349,6 +353,7 @@ public sealed class Image
             ".pgm" => ImageFormat.Pgm,
             ".ppm" or ".pnm" => ImageFormat.Ppm,
             ".webp" => ImageFormat.WebP,
+            ".tif" or ".tiff" => ImageFormat.Tiff,
             _ => throw new NotSupportedException($"Unknown image format for extension '{ext}'.")
         };
     }
@@ -431,6 +436,21 @@ public sealed class Image
             data[8] == 0x57 && data[9] == 0x45 && data[10] == 0x42 && data[11] == 0x50)  // "WEBP"
         {
             return ImageFormat.WebP;
+        }
+
+        // TIFF signature: II* (little-endian) or MM* (big-endian)
+        if (data.Length >= 4)
+        {
+            // Little-endian: 0x49 0x49 0x2A 0x00 ("II" + 42)
+            if (data[0] == 0x49 && data[1] == 0x49 && data[2] == 0x2A && data[3] == 0x00)
+            {
+                return ImageFormat.Tiff;
+            }
+            // Big-endian: 0x4D 0x4D 0x00 0x2A ("MM" + 42)
+            if (data[0] == 0x4D && data[1] == 0x4D && data[2] == 0x00 && data[3] == 0x2A)
+            {
+                return ImageFormat.Tiff;
+            }
         }
 
         throw new NotSupportedException("Unknown image format. Could not detect from file signature.");

@@ -12,8 +12,8 @@ class Program
         //Process("lena.bmp");
         //Process("landscape.pbm");
         //Process("cat.webp");
-        Process("matrix.webp");
-        //Process("cairn.webp");
+        //Process("matrix.webp");
+        Process("autumn.tif");
         
         void Process(string name)
         {
