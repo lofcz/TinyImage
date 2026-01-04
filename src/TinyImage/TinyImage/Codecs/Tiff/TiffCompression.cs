@@ -7,6 +7,11 @@ namespace TinyImage.Codecs.Tiff;
 internal enum TiffCompression : ushort
 {
     /// <summary>
+    /// Unspecified (treated as no compression).
+    /// </summary>
+    Unspecified = 0,
+
+    /// <summary>
     /// No compression.
     /// </summary>
     None = 1,

@@ -4,16 +4,21 @@ class Program
 {
     static void Main(string[] args)
     {
-        //Process("dice.png");
-        //Process("stone.jpg");
-        //Process("earth.gif");
-        //Process("globe.jp2");
-        //Process("three.bmp");
-        //Process("lena.bmp");
-        //Process("landscape.pbm");
-        //Process("cat.webp");
-        //Process("matrix.webp");
+        /*Process("dice.png");
+        Process("stone.jpg");
+        Process("earth.gif");
+        Process("globe.jp2");
+        Process("three.bmp");
+        Process("lena.bmp");
+        Process("landscape.pbm");
+        Process("cat.webp");
+        Process("matrix.webp");
         Process("autumn.tif");
+        Process("board.tif");
+        Process("galaxy.tif");
+        Process("mri.tif");
+        Process("venus.tif");*/
+        Process("screws.tif");
         
         void Process(string name)
         {

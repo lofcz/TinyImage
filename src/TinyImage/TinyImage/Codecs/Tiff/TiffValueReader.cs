@@ -1,4 +1,5 @@
 using System;
+using System.Buffers.Binary;
 using System.IO;
 using System.Text;
 
@@ -36,8 +37,17 @@ internal sealed class TiffValueReader
 
         if (entry.IsValueInline(_isBigTiff))
         {
-            // Value is inline
-            ReadInlineUInt16Array(entry.ValueOffset, result);
+            // For single values, ParseIfdEntry already extracted the value correctly
+            // with proper byte order handling, so we can use it directly
+            if (entry.Count == 1)
+            {
+                result[0] = (ushort)entry.ValueOffset;
+            }
+            else
+            {
+                // Multiple values packed inline - need to extract from raw bytes
+                ReadInlineUInt16Array(entry.ValueOffset, result);
+            }
         }
         else
         {
@@ -256,14 +266,31 @@ internal sealed class TiffValueReader
 
     private void ReadInlineUInt16Array(ulong valueOffset, ushort[] result)
     {
+        // valueOffset contains the raw bytes that were read using _byteOrder.ReadUInt32/ReadUInt64
+        // After BitConverter.GetBytes, the bytes are in native byte order
+        // We need to extract the values correctly based on how they were packed
         var bytes = BitConverter.GetBytes(valueOffset);
-        if (!_byteOrder.IsLittleEndian)
-            Array.Reverse(bytes);
-
+        
         int maxCount = Math.Min(result.Length, (_isBigTiff ? 8 : 4) / 2);
-        for (int i = 0; i < maxCount; i++)
+        
+        if (_byteOrder.IsLittleEndian)
         {
-            result[i] = _byteOrder.ReadUInt16(bytes.AsSpan(i * 2));
+            // Little-endian TIFF: shorts are in natural order in the byte array
+            for (int i = 0; i < maxCount; i++)
+            {
+                result[i] = BinaryPrimitives.ReadUInt16LittleEndian(bytes.AsSpan(i * 2));
+            }
+        }
+        else
+        {
+            // Big-endian TIFF: shorts are in reverse order after ReadUInt32/ReadUInt64 + BitConverter
+            // The first short ends up at the highest byte positions
+            int totalShorts = (_isBigTiff ? 8 : 4) / 2;
+            for (int i = 0; i < maxCount; i++)
+            {
+                int byteOffset = (totalShorts - 1 - i) * 2;
+                result[i] = BinaryPrimitives.ReadUInt16LittleEndian(bytes.AsSpan(byteOffset));
+            }
         }
     }
 

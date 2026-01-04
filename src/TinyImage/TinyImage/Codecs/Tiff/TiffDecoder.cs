@@ -238,15 +238,119 @@ internal sealed class TiffDecoder
         if (_isBigTiff)
         {
             count = (uint)_byteOrder.ReadUInt64(buffer.AsSpan(4, 8));
-            valueOffset = _byteOrder.ReadUInt64(buffer.AsSpan(12, 8));
+            
+            // For inline values, read according to field type and count
+            // Values are stored left-aligned in the 8-byte value/offset field
+            int byteSize = fieldType.GetByteLength() * (int)count;
+            if (byteSize <= TiffConstants.MaxBigTiffInlineBytes)
+            {
+                // Value is inline - read appropriate number of bytes
+                valueOffset = ReadInlineValueBigTiff(buffer.AsSpan(12, 8), fieldType, count);
+            }
+            else
+            {
+                // Value is an offset
+                valueOffset = _byteOrder.ReadUInt64(buffer.AsSpan(12, 8));
+            }
         }
         else
         {
             count = _byteOrder.ReadUInt32(buffer.AsSpan(4, 4));
-            valueOffset = _byteOrder.ReadUInt32(buffer.AsSpan(8, 4));
+            
+            // For inline values, read according to field type and count
+            // Values are stored left-aligned in the 4-byte value/offset field
+            int byteSize = fieldType.GetByteLength() * (int)count;
+            if (byteSize <= TiffConstants.MaxInlineBytes)
+            {
+                // Value is inline - read appropriate number of bytes
+                valueOffset = ReadInlineValue(buffer.AsSpan(8, 4), fieldType, count);
+            }
+            else
+            {
+                // Value is an offset
+                valueOffset = _byteOrder.ReadUInt32(buffer.AsSpan(8, 4));
+            }
         }
 
         return new TiffIfdEntry(tag, fieldType, count, valueOffset);
+    }
+
+    /// <summary>
+    /// Reads an inline value from the value/offset field based on field type.
+    /// Values are stored left-aligned in the field.
+    /// </summary>
+    private ulong ReadInlineValue(Span<byte> data, TiffFieldType fieldType, uint count)
+    {
+        // For single-value entries, extract based on field type
+        if (count == 1)
+        {
+            switch (fieldType)
+            {
+                case TiffFieldType.Byte:
+                case TiffFieldType.SByte:
+                case TiffFieldType.Undefined:
+                    return data[0];
+
+                case TiffFieldType.Short:
+                case TiffFieldType.SShort:
+                    return _byteOrder.ReadUInt16(data.Slice(0, 2));
+
+                case TiffFieldType.Long:
+                case TiffFieldType.SLong:
+                case TiffFieldType.Ifd:
+                case TiffFieldType.Float:
+                    return _byteOrder.ReadUInt32(data);
+
+                default:
+                    return _byteOrder.ReadUInt32(data);
+            }
+        }
+
+        // For multi-value entries that fit inline, store the raw bytes
+        // They'll be properly parsed by the value reader
+        return _byteOrder.ReadUInt32(data);
+    }
+
+    /// <summary>
+    /// Reads an inline value from the BigTIFF value/offset field based on field type.
+    /// Values are stored left-aligned in the 8-byte field.
+    /// </summary>
+    private ulong ReadInlineValueBigTiff(Span<byte> data, TiffFieldType fieldType, uint count)
+    {
+        // For single-value entries, extract based on field type
+        if (count == 1)
+        {
+            switch (fieldType)
+            {
+                case TiffFieldType.Byte:
+                case TiffFieldType.SByte:
+                case TiffFieldType.Undefined:
+                    return data[0];
+
+                case TiffFieldType.Short:
+                case TiffFieldType.SShort:
+                    return _byteOrder.ReadUInt16(data.Slice(0, 2));
+
+                case TiffFieldType.Long:
+                case TiffFieldType.SLong:
+                case TiffFieldType.Ifd:
+                case TiffFieldType.Float:
+                    return _byteOrder.ReadUInt32(data.Slice(0, 4));
+
+                case TiffFieldType.Long8:
+                case TiffFieldType.SLong8:
+                case TiffFieldType.Ifd8:
+                case TiffFieldType.Double:
+                    return _byteOrder.ReadUInt64(data);
+
+                default:
+                    return _byteOrder.ReadUInt64(data);
+            }
+        }
+
+        // For multi-value entries that fit inline, store the raw bytes
+        // They'll be properly parsed by the value reader
+        return _byteOrder.ReadUInt64(data);
     }
 
     /// <summary>
@@ -292,6 +396,7 @@ internal sealed class TiffDecoder
         // Check compression support
         switch (info.Compression)
         {
+            case TiffCompression.Unspecified:
             case TiffCompression.None:
             case TiffCompression.Lzw:
             case TiffCompression.Deflate:
@@ -600,7 +705,7 @@ internal sealed class TiffDecoder
 
         return compression switch
         {
-            TiffCompression.None => compressedData,
+            TiffCompression.Unspecified or TiffCompression.None => compressedData,
             TiffCompression.Lzw => TiffLzwDecoder.Decode(compressedData, uncompressedSize),
             TiffCompression.Deflate or TiffCompression.OldDeflate => TiffDeflateDecoder.Decode(compressedData, uncompressedSize),
             TiffCompression.PackBits => TiffPackBitsDecoder.Decode(compressedData, uncompressedSize),
@@ -621,7 +726,7 @@ internal sealed class TiffDecoder
 
         return compression switch
         {
-            TiffCompression.None => compressedData,
+            TiffCompression.Unspecified or TiffCompression.None => compressedData,
             TiffCompression.Lzw => TiffLzwDecoder.Decode(compressedData, uncompressedSize),
             TiffCompression.Deflate or TiffCompression.OldDeflate => TiffDeflateDecoder.Decode(compressedData, uncompressedSize),
             TiffCompression.PackBits => TiffPackBitsDecoder.Decode(compressedData, uncompressedSize),
