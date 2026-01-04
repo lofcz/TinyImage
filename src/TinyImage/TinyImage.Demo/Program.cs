@@ -10,8 +10,11 @@ class Program
         //Process("globe.jp2");
         //Process("three.bmp");
         //Process("lena.bmp");
-        Process("landscape.pbm");
-
+        //Process("landscape.pbm");
+        //Process("cat.webp");
+        Process("matrix.webp");
+        //Process("cairn.webp");
+        
         void Process(string name)
         {
             Image image = Image.Load(Path.Join("imgs", name));

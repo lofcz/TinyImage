@@ -52,5 +52,12 @@ public enum ImageFormat
     /// PPM format (Portable Pixmap).
     /// RGB color images. Supports P3 (ASCII) and P6 (binary) variants.
     /// </summary>
-    Ppm
+    Ppm,
+
+    /// <summary>
+    /// WebP format.
+    /// Supports both lossy (VP8) and lossless (VP8L) compression with alpha channel.
+    /// Also supports animation.
+    /// </summary>
+    WebP
 }

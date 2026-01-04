@@ -72,6 +72,12 @@ public sealed class ImageFrame
     internal PixelBuffer Buffer => _buffer;
 
     /// <summary>
+    /// Gets the raw pixel data as a byte array (RGBA format).
+    /// </summary>
+    /// <returns>A copy of the pixel data.</returns>
+    public byte[] GetPixelData() => _buffer.GetRawData();
+
+    /// <summary>
     /// Creates a deep copy of this frame.
     /// </summary>
     /// <returns>A new frame with copied pixel data.</returns>

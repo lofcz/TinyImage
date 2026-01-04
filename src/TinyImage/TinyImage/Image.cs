@@ -181,6 +181,7 @@ public sealed class Image
             ImageFormat.Jpeg2000 => Codecs.Jpeg2000.Jpeg2000Codec.Decode(stream),
             ImageFormat.Bmp => Codecs.Bmp.BmpCodec.Decode(stream),
             ImageFormat.Pbm or ImageFormat.Pgm or ImageFormat.Ppm => Codecs.Pnm.PnmCodec.Decode(stream),
+            ImageFormat.WebP => Codecs.WebP.WebPCodec.Decode(stream),
             _ => throw new NotSupportedException($"Image format '{format}' is not supported.")
         };
     }
@@ -272,6 +273,9 @@ public sealed class Image
             case ImageFormat.Ppm:
                 Codecs.Pnm.PnmCodec.EncodePpm(this, stream);
                 break;
+            case ImageFormat.WebP:
+                Codecs.WebP.WebPCodec.Encode(this, stream);
+                break;
             default:
                 throw new NotSupportedException($"Image format '{format}' is not supported.");
         }
@@ -344,6 +348,7 @@ public sealed class Image
             ".pbm" => ImageFormat.Pbm,
             ".pgm" => ImageFormat.Pgm,
             ".ppm" or ".pnm" => ImageFormat.Ppm,
+            ".webp" => ImageFormat.WebP,
             _ => throw new NotSupportedException($"Unknown image format for extension '{ext}'.")
         };
     }
@@ -418,6 +423,14 @@ public sealed class Image
                 case 0x36: // P6 - PPM Binary
                     return ImageFormat.Ppm;
             }
+        }
+
+        // WebP signature: RIFF....WEBP
+        if (data.Length >= 12 &&
+            data[0] == 0x52 && data[1] == 0x49 && data[2] == 0x46 && data[3] == 0x46 && // "RIFF"
+            data[8] == 0x57 && data[9] == 0x45 && data[10] == 0x42 && data[11] == 0x50)  // "WEBP"
+        {
+            return ImageFormat.WebP;
         }
 
         throw new NotSupportedException("Unknown image format. Could not detect from file signature.");

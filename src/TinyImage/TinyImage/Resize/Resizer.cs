@@ -168,10 +168,10 @@ internal static class Resizer
         double w01 = x0Weight * yFrac;
         double w11 = xFrac * yFrac;
 
-        byte r = ClampToByte(p00.R * w00 + p10.R * w10 + p01.R * w01 + p11.R * w11);
-        byte g = ClampToByte(p00.G * w00 + p10.G * w10 + p01.G * w01 + p11.G * w11);
-        byte b = ClampToByte(p00.B * w00 + p10.B * w10 + p01.B * w01 + p11.B * w11);
-        byte a = ClampToByte(p00.A * w00 + p10.A * w10 + p01.A * w01 + p11.A * w11);
+        byte r = MathExt.ClampToByte(p00.R * w00 + p10.R * w10 + p01.R * w01 + p11.R * w11);
+        byte g = MathExt.ClampToByte(p00.G * w00 + p10.G * w10 + p01.G * w01 + p11.G * w11);
+        byte b = MathExt.ClampToByte(p00.B * w00 + p10.B * w10 + p01.B * w01 + p11.B * w11);
+        byte a = MathExt.ClampToByte(p00.A * w00 + p10.A * w10 + p01.A * w01 + p11.A * w11);
 
         return new Rgba32(r, g, b, a);
     }
@@ -182,12 +182,12 @@ internal static class Resizer
 
         for (int j = -1; j <= 2; j++)
         {
-            int y = Clamp(y1 + j, 0, height - 1);
+            int y = MathExt.Clamp(y1 + j, 0, height - 1);
             double wy = CubicWeight(j - yFrac);
 
             for (int i = -1; i <= 2; i++)
             {
-                int x = Clamp(x1 + i, 0, width - 1);
+                int x = MathExt.Clamp(x1 + i, 0, width - 1);
                 double wx = CubicWeight(i - xFrac);
                 double w = wx * wy;
 
@@ -200,10 +200,10 @@ internal static class Resizer
         }
 
         return new Rgba32(
-            ClampToByte(rSum),
-            ClampToByte(gSum),
-            ClampToByte(bSum),
-            ClampToByte(aSum)
+            MathExt.ClampToByte(rSum),
+            MathExt.ClampToByte(gSum),
+            MathExt.ClampToByte(bSum),
+            MathExt.ClampToByte(aSum)
         );
     }
 
@@ -225,21 +225,5 @@ internal static class Resizer
         }
         
         return 0.0;
-    }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static int Clamp(int value, int min, int max)
-    {
-        if (value < min) return min;
-        if (value > max) return max;
-        return value;
-    }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static byte ClampToByte(double value)
-    {
-        if (value < 0) return 0;
-        if (value > 255) return 255;
-        return (byte)(value + 0.5);
     }
 }
