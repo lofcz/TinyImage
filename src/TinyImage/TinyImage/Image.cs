@@ -14,6 +14,8 @@ namespace TinyImage;
 /// </remarks>
 public sealed class Image
 {
+    private Dictionary<Type, object>? _metadata;
+
     /// <summary>
     /// Gets the collection of frames in this image.
     /// </summary>
@@ -57,6 +59,49 @@ public sealed class Image
     /// This property is used for animated formats like GIF, WebP, and APNG.
     /// </remarks>
     public int LoopCount { get; set; } = 0;
+
+    /// <summary>
+    /// Gets format-specific metadata of the specified type.
+    /// </summary>
+    /// <typeparam name="T">The metadata type to retrieve.</typeparam>
+    /// <returns>The metadata instance, or null if not present.</returns>
+    public T? GetMetadata<T>() where T : class
+    {
+        if (_metadata != null && _metadata.TryGetValue(typeof(T), out var value))
+            return value as T;
+        return null;
+    }
+
+    /// <summary>
+    /// Sets format-specific metadata.
+    /// </summary>
+    /// <typeparam name="T">The metadata type to store.</typeparam>
+    /// <param name="metadata">The metadata instance to store.</param>
+    public void SetMetadata<T>(T metadata) where T : class
+    {
+        _metadata ??= new Dictionary<Type, object>();
+        _metadata[typeof(T)] = metadata;
+    }
+
+    /// <summary>
+    /// Removes format-specific metadata of the specified type.
+    /// </summary>
+    /// <typeparam name="T">The metadata type to remove.</typeparam>
+    /// <returns>True if metadata was removed, false if it wasn't present.</returns>
+    public bool RemoveMetadata<T>() where T : class
+    {
+        return _metadata?.Remove(typeof(T)) ?? false;
+    }
+
+    /// <summary>
+    /// Gets whether format-specific metadata of the specified type is present.
+    /// </summary>
+    /// <typeparam name="T">The metadata type to check.</typeparam>
+    /// <returns>True if metadata is present.</returns>
+    public bool HasMetadata<T>() where T : class
+    {
+        return _metadata?.ContainsKey(typeof(T)) ?? false;
+    }
 
     /// <summary>
     /// Creates a new image with the specified dimensions.
@@ -185,6 +230,7 @@ public sealed class Image
             ImageFormat.Tiff => Codecs.Tiff.TiffCodec.Decode(stream),
             ImageFormat.Tga => Codecs.Tga.TgaCodec.Decode(stream),
             ImageFormat.Qoi => Codecs.Qoi.QoiCodec.Decode(stream),
+            ImageFormat.Ico or ImageFormat.Cur => Codecs.Ico.IcoCodec.Decode(stream),
             _ => throw new NotSupportedException($"Image format '{format}' is not supported.")
         };
     }
@@ -288,6 +334,12 @@ public sealed class Image
             case ImageFormat.Qoi:
                 Codecs.Qoi.QoiCodec.Encode(this, stream);
                 break;
+            case ImageFormat.Ico:
+                Codecs.Ico.IcoCodec.Encode(this, stream, Codecs.Ico.IcoResourceType.Icon);
+                break;
+            case ImageFormat.Cur:
+                Codecs.Ico.IcoCodec.Encode(this, stream, Codecs.Ico.IcoResourceType.Cursor);
+                break;
             default:
                 throw new NotSupportedException($"Image format '{format}' is not supported.");
         }
@@ -364,6 +416,8 @@ public sealed class Image
             ".tif" or ".tiff" => ImageFormat.Tiff,
             ".tga" or ".vda" or ".icb" or ".vst" => ImageFormat.Tga,
             ".qoi" => ImageFormat.Qoi,
+            ".ico" => ImageFormat.Ico,
+            ".cur" => ImageFormat.Cur,
             _ => throw new NotSupportedException($"Unknown image format for extension '{ext}'.")
         };
     }
@@ -468,6 +522,20 @@ public sealed class Image
             data[0] == 0x71 && data[1] == 0x6F && data[2] == 0x69 && data[3] == 0x66)
         {
             return ImageFormat.Qoi;
+        }
+
+        // ICO signature: 00 00 01 00 (reserved=0, type=1)
+        if (data.Length >= 4 &&
+            data[0] == 0x00 && data[1] == 0x00 && data[2] == 0x01 && data[3] == 0x00)
+        {
+            return ImageFormat.Ico;
+        }
+
+        // CUR signature: 00 00 02 00 (reserved=0, type=2)
+        if (data.Length >= 4 &&
+            data[0] == 0x00 && data[1] == 0x00 && data[2] == 0x02 && data[3] == 0x00)
+        {
+            return ImageFormat.Cur;
         }
 
         throw new NotSupportedException("Unknown image format. Could not detect from file signature.");

@@ -81,5 +81,20 @@ public enum ImageFormat
     /// Provides 20-50x faster encoding and 3-4x faster decoding than PNG
     /// with comparable compression ratios.
     /// </summary>
-    Qoi
+    Qoi,
+
+    /// <summary>
+    /// ICO format (Windows Icon).
+    /// Contains multiple images at different sizes and color depths.
+    /// Individual images can be encoded as BMP or PNG.
+    /// Commonly used for application icons and website favicons.
+    /// </summary>
+    Ico,
+
+    /// <summary>
+    /// CUR format (Windows Cursor).
+    /// Same structure as ICO but includes hotspot coordinates for each image.
+    /// Used for custom mouse cursors in Windows applications.
+    /// </summary>
+    Cur
 }
