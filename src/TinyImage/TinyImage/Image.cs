@@ -178,6 +178,8 @@ public sealed class Image
             ImageFormat.Png => Codecs.Png.PngCodec.Decode(stream),
             ImageFormat.Jpeg => Codecs.Jpeg.JpegCodec.Decode(stream),
             ImageFormat.Gif => Codecs.Gif.GifCodec.Decode(stream),
+            ImageFormat.Jpeg2000 => Codecs.Jpeg2000.Jpeg2000Codec.Decode(stream),
+            ImageFormat.Bmp => Codecs.Bmp.BmpCodec.Decode(stream),
             _ => throw new NotSupportedException($"Image format '{format}' is not supported.")
         };
     }
@@ -254,6 +256,12 @@ public sealed class Image
             case ImageFormat.Gif:
                 Codecs.Gif.GifCodec.Encode(this, stream);
                 break;
+            case ImageFormat.Jpeg2000:
+                Codecs.Jpeg2000.Jpeg2000Codec.Encode(this, stream);
+                break;
+            case ImageFormat.Bmp:
+                Codecs.Bmp.BmpCodec.Encode(this, stream);
+                break;
             default:
                 throw new NotSupportedException($"Image format '{format}' is not supported.");
         }
@@ -321,6 +329,8 @@ public sealed class Image
             ".png" => ImageFormat.Png,
             ".jpg" or ".jpeg" => ImageFormat.Jpeg,
             ".gif" => ImageFormat.Gif,
+            ".jp2" or ".j2k" or ".j2c" or ".jpf" or ".jpx" => ImageFormat.Jpeg2000,
+            ".bmp" or ".dib" => ImageFormat.Bmp,
             _ => throw new NotSupportedException($"Unknown image format for extension '{ext}'.")
         };
     }
@@ -356,6 +366,28 @@ public sealed class Image
             data[3] == 0x38 && (data[4] == 0x37 || data[4] == 0x39) && data[5] == 0x61)  // "87a" or "89a"
         {
             return ImageFormat.Gif;
+        }
+
+        // JPEG 2000 JP2 container signature: 00 00 00 0C 6A 50 20 20 (jP  )
+        if (data.Length >= 12 &&
+            data[0] == 0x00 && data[1] == 0x00 && data[2] == 0x00 && data[3] == 0x0C &&
+            data[4] == 0x6A && data[5] == 0x50 && data[6] == 0x20 && data[7] == 0x20)
+        {
+            return ImageFormat.Jpeg2000;
+        }
+
+        // JPEG 2000 raw codestream signature: FF 4F FF 51 (SOC + SIZ markers)
+        if (data.Length >= 4 &&
+            data[0] == 0xFF && data[1] == 0x4F && data[2] == 0xFF && data[3] == 0x51)
+        {
+            return ImageFormat.Jpeg2000;
+        }
+
+        // BMP signature: 42 4D ("BM")
+        if (data.Length >= 2 &&
+            data[0] == 0x42 && data[1] == 0x4D)
+        {
+            return ImageFormat.Bmp;
         }
 
         throw new NotSupportedException("Unknown image format. Could not detect from file signature.");

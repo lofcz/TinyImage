@@ -4,15 +4,19 @@ class Program
 {
     static void Main(string[] args)
     {
-        Process("dice.png");
-        Process("stone.jpg");
-        Process("earth.gif");
-        
+        //Process("dice.png");
+        //Process("stone.jpg");
+        //Process("earth.gif");
+        //Process("globe.jp2");
+        Process("three.bmp");
+        Process("lena.bmp");
+
         void Process(string name)
         {
             Image image = Image.Load(Path.Join("imgs", name));
             Image copy = image.Resize(128, 128);
-            copy.Save($"{Path.GetFileNameWithoutExtension(name)}_resized{Path.GetExtension(name)}");       
+            copy.Save($"{Path.GetFileNameWithoutExtension(name)}_resized{Path.GetExtension(name)}");
+            image.Save($"{Path.GetFileNameWithoutExtension(name)}_original{Path.GetExtension(name)}");
         }
         
         int z = 0;
