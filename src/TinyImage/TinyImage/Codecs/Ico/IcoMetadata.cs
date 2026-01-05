@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 
 namespace TinyImage.Codecs.Ico;
@@ -9,7 +10,7 @@ namespace TinyImage.Codecs.Ico;
 /// Access via <c>image.GetMetadata&lt;IcoMetadata&gt;()</c> after loading an ICO/CUR file.
 /// Set via <c>image.SetMetadata(new IcoMetadata { ... })</c> before saving.
 /// </remarks>
-public sealed class IcoMetadata
+public sealed class IcoMetadata : IMetadata, ICloneableMetadata
 {
     private readonly List<IcoEntryMetadata> _entries = new List<IcoEntryMetadata>();
 
@@ -57,6 +58,42 @@ public sealed class IcoMetadata
         _entries[entryIndex].HotspotX = x;
         _entries[entryIndex].HotspotY = y;
         ResourceType = IcoResourceType.Cursor;
+    }
+
+    /// <inheritdoc/>
+    public void OnImageResized(int oldWidth, int oldHeight, int newWidth, int newHeight)
+    {
+        if (_entries.Count == 0)
+            return;
+
+        double xScale = (double)newWidth / oldWidth;
+        double yScale = (double)newHeight / oldHeight;
+
+        foreach (var entry in _entries)
+        {
+            if (entry.HotspotX != 0 || entry.HotspotY != 0)
+            {
+                entry.HotspotX = (ushort)Math.Round(entry.HotspotX * xScale);
+                entry.HotspotY = (ushort)Math.Round(entry.HotspotY * yScale);
+            }
+        }
+    }
+
+    /// <inheritdoc/>
+    public object Clone()
+    {
+        var clone = new IcoMetadata { ResourceType = ResourceType };
+        foreach (var entry in _entries)
+        {
+            clone._entries.Add(new IcoEntryMetadata
+            {
+                HotspotX = entry.HotspotX,
+                HotspotY = entry.HotspotY,
+                BitsPerPixel = entry.BitsPerPixel,
+                IsPng = entry.IsPng
+            });
+        }
+        return clone;
     }
 }
 

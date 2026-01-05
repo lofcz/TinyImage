@@ -20,13 +20,15 @@ class Program
         Process("venus.tif");
         Process("screws.tif");
         Process("earth.tga");
-        Process("shuttle.tga");*/
+        Process("shuttle.tga");
         Process("qoi_logo.qoi");
+        Process("busy.ani", 256);*/
+        Process("hand.cur");
 
-        void Process(string name)
+        void Process(string name, int size = 128)
         {
             Image image = Image.Load(Path.Join("imgs", name));
-            Image copy = image.Resize(128, 128);
+            Image copy = image.Resize(size, size);
             copy.Save($"{Path.GetFileNameWithoutExtension(name)}_resized{Path.GetExtension(name)}");
             image.Save($"{Path.GetFileNameWithoutExtension(name)}_original{Path.GetExtension(name)}");
         }

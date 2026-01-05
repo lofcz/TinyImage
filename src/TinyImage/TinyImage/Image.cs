@@ -104,6 +104,31 @@ public sealed class Image
     }
 
     /// <summary>
+    /// Gets the internal metadata dictionary for advanced operations.
+    /// </summary>
+    internal Dictionary<Type, object>? MetadataDictionary => _metadata;
+
+    /// <summary>
+    /// Copies all metadata from another image (deep copy for ICloneableMetadata).
+    /// </summary>
+    /// <param name="source">The source image to copy metadata from.</param>
+    internal void CopyMetadataFrom(Image source)
+    {
+        if (source._metadata != null && source._metadata.Count > 0)
+        {
+            _metadata ??= new Dictionary<Type, object>();
+            foreach (var kvp in source._metadata)
+            {
+                // Deep copy if metadata supports cloning, otherwise shallow copy
+                if (kvp.Value is ICloneableMetadata cloneable)
+                    _metadata[kvp.Key] = cloneable.Clone();
+                else
+                    _metadata[kvp.Key] = kvp.Value;
+            }
+        }
+    }
+
+    /// <summary>
     /// Creates a new image with the specified dimensions.
     /// </summary>
     /// <param name="width">The width in pixels.</param>
@@ -231,6 +256,7 @@ public sealed class Image
             ImageFormat.Tga => Codecs.Tga.TgaCodec.Decode(stream),
             ImageFormat.Qoi => Codecs.Qoi.QoiCodec.Decode(stream),
             ImageFormat.Ico or ImageFormat.Cur => Codecs.Ico.IcoCodec.Decode(stream),
+            ImageFormat.Ani => Codecs.Ani.AniCodec.Decode(stream),
             _ => throw new NotSupportedException($"Image format '{format}' is not supported.")
         };
     }
@@ -340,6 +366,9 @@ public sealed class Image
             case ImageFormat.Cur:
                 Codecs.Ico.IcoCodec.Encode(this, stream, Codecs.Ico.IcoResourceType.Cursor);
                 break;
+            case ImageFormat.Ani:
+                Codecs.Ani.AniCodec.Encode(this, stream);
+                break;
             default:
                 throw new NotSupportedException($"Image format '{format}' is not supported.");
         }
@@ -392,7 +421,9 @@ public sealed class Image
     /// <returns>A new image with copied pixel data.</returns>
     public Image Clone()
     {
-        return new Image(Frames.Clone(), HasAlpha, LoopCount);
+        var clone = new Image(Frames.Clone(), HasAlpha, LoopCount);
+        clone.CopyMetadataFrom(this);
+        return clone;
     }
 
     #endregion
@@ -418,6 +449,7 @@ public sealed class Image
             ".qoi" => ImageFormat.Qoi,
             ".ico" => ImageFormat.Ico,
             ".cur" => ImageFormat.Cur,
+            ".ani" => ImageFormat.Ani,
             _ => throw new NotSupportedException($"Unknown image format for extension '{ext}'.")
         };
     }
@@ -494,12 +526,20 @@ public sealed class Image
             }
         }
 
-        // WebP signature: RIFF....WEBP
+        // RIFF-based formats: WebP (WEBP) and ANI (ACON)
         if (data.Length >= 12 &&
-            data[0] == 0x52 && data[1] == 0x49 && data[2] == 0x46 && data[3] == 0x46 && // "RIFF"
-            data[8] == 0x57 && data[9] == 0x45 && data[10] == 0x42 && data[11] == 0x50)  // "WEBP"
+            data[0] == 0x52 && data[1] == 0x49 && data[2] == 0x46 && data[3] == 0x46) // "RIFF"
         {
-            return ImageFormat.WebP;
+            // WebP signature: RIFF....WEBP
+            if (data[8] == 0x57 && data[9] == 0x45 && data[10] == 0x42 && data[11] == 0x50)  // "WEBP"
+            {
+                return ImageFormat.WebP;
+            }
+            // ANI signature: RIFF....ACON
+            if (data[8] == 0x41 && data[9] == 0x43 && data[10] == 0x4F && data[11] == 0x4E)  // "ACON"
+            {
+                return ImageFormat.Ani;
+            }
         }
 
         // TIFF signature: II* (little-endian) or MM* (big-endian)

@@ -96,5 +96,12 @@ public enum ImageFormat
     /// Same structure as ICO but includes hotspot coordinates for each image.
     /// Used for custom mouse cursors in Windows applications.
     /// </summary>
-    Cur
+    Cur,
+
+    /// <summary>
+    /// ANI format (Animated Cursor).
+    /// RIFF-based format containing multiple ICO/CUR frames with animation timing.
+    /// Used for animated mouse cursors in Windows applications.
+    /// </summary>
+    Ani
 }

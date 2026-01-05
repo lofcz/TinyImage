@@ -20,6 +20,9 @@ internal static class Resizer
     /// <returns>The resized image with all frames.</returns>
     public static Image Resize(Image source, int newWidth, int newHeight, ResizeMode mode)
     {
+        int srcWidth = source.Width;
+        int srcHeight = source.Height;
+
         // Resize all frames
         var resizedFrames = new List<ImageFrame>(source.Frames.Count);
         
@@ -29,7 +32,31 @@ internal static class Resizer
             resizedFrames.Add(resizedFrame);
         }
 
-        return new Image(resizedFrames, source.HasAlpha, source.LoopCount);
+        var result = new Image(resizedFrames, source.HasAlpha, source.LoopCount);
+
+        // Copy metadata from source, then notify scalable metadata of the resize
+        result.CopyMetadataFrom(source);
+        NotifyScalableMetadata(result, srcWidth, srcHeight, newWidth, newHeight);
+
+        return result;
+    }
+
+    /// <summary>
+    /// Notifies any metadata implementing IMetadata about the resize.
+    /// </summary>
+    private static void NotifyScalableMetadata(Image image, int srcWidth, int srcHeight, int newWidth, int newHeight)
+    {
+        var metadataDict = image.MetadataDictionary;
+        if (metadataDict == null)
+            return;
+
+        foreach (var kvp in metadataDict)
+        {
+            if (kvp.Value is IMetadata scalable)
+            {
+                scalable.OnImageResized(srcWidth, srcHeight, newWidth, newHeight);
+            }
+        }
     }
 
     /// <summary>
